@@ -46,14 +46,18 @@ export class ImportDb {
     }
 
     public saveImport(name: string, data: any, file: any, isDefault = false): void {
-
         name = name.trim();
-
+        console.log("saveImport name=" + name + " file=" + file.fsPath);
         if (name === '' || name.length === 1) {
             return;
         }
 
         let db = this.getDB();
+
+        let modules = this.getImport(name);
+        if (modules && modules.length > 0 && modules[0].file.fsPath.endsWith('index.js')) {
+            return;
+        }
 
         let obj: ImportObject = {
             name,

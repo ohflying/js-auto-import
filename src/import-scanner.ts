@@ -1,4 +1,5 @@
 import { NodeUpload } from './node-upload';
+import * as path from 'path';
 import * as FS from 'fs';
 import * as vscode from 'vscode';
 import * as _ from 'lodash';
@@ -60,12 +61,13 @@ export class ImportScanner {
                 f.fsPath.indexOf('node_modules') === -1 &&
                 f.fsPath.indexOf('jspm_packages') === -1;
         });
-        pruned.forEach((f, i) => {
+        pruned.reverse().forEach((f, i) => {
             this.loadFile(f, i === (pruned.length - 1));
         });
     }
 
     private loadFile(file: vscode.Uri, last: boolean): void {
+        console.log("file=" + file.fsPath);
         FS.readFile(file.fsPath, 'utf8', (err, data) => {
             if (err) {
                 return console.log(err);
@@ -100,28 +102,28 @@ export class ImportScanner {
         
         if (defaultClassMatches) {
             defaultClassMatches.forEach(m => {
-                let workingFile: string =
-                    m.replace('export', '').replace('default', '').replace('class', '').replace(' ', '');
-
-                this.db.saveImport(workingFile, data, file, true);
+                //let workingFile: string =
+                //    m.replace('export', '').replace('default', '').replace('class', '').replace(' ', '');
+                let moduleName = this.getModuleName(file.fsPath);
+                this.db.saveImport(moduleName, data, file, true);
             });
         }
 
         if (defaultFunctionMatches) {
             defaultFunctionMatches.forEach(m => {
-                let workingFile: string =
-                    m.replace('export', '').replace('default', '').replace('function', '').replace(' ', '');
-
-                this.db.saveImport(workingFile, data, file, true);
+                //let workingFile: string =
+                //    m.replace('export', '').replace('default', '').replace('function', '').replace(' ', '');
+                let moduleName = this.getModuleName(file.fsPath);
+                this.db.saveImport(moduleName, data, file, true);
             });
         }
 
         if (defaultNewMatches) {
             defaultNewMatches.forEach(m => {
-                let workingFile: string =
-                    m.replace('export', '').replace('default', '').replace('new', '').replace(' ', '');
-
-                this.db.saveImport(workingFile, data, file, true);
+                //let workingFile: string =
+                //    m.replace('export', '').replace('default', '').replace('new', '').replace(' ', '');
+                let moduleName = this.getModuleName(file.fsPath);
+                this.db.saveImport(moduleName, data, file, true);
             });
         }
 
@@ -170,5 +172,18 @@ export class ImportScanner {
                 this.db.saveImport(workingFile, data, file);
             });
         }
+    }
+
+    private getModuleName(file: string) {
+        let dirs = file.split(path.sep);
+        if (dirs && dirs.length > 1) {
+            var fileName = dirs[dirs.length - 1];
+            if (fileName.toLocaleLowerCase() === 'index.js') {
+                return dirs[dirs.length - 2];
+            } else {
+                return fileName.replace('.js', '');
+            }
+        }
+        return null;
     }
 }

@@ -4,7 +4,9 @@ export class PathHelper {
 
     public static normalisePath(relativePath) {
         let removeFileExtenion = (rp) => {
-            if (rp) {
+            if (rp.endsWith('index.js')) {
+                rp = rp.substring(0, rp.lastIndexOf('/'))
+            } else if (rp) {
                 rp = rp.substring(0, rp.lastIndexOf('.'))
             }
             return rp;

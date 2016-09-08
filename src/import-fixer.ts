@@ -39,17 +39,20 @@ export class ImportFixer {
     }
 
     private findPosition(document) {
+        let foundLine = 0;
         for(let i = 0; i < document.lineCount; i++) {
             let text = document.lineAt(i).text.trim();
-            console.log("text=" + text);
-            if (text === '' || text.includes("use strict") || text.startsWith('import ')) {
+            if (text.includes("use strict") || text.startsWith('import ')) {
+                foundLine = i + 1;
                 continue;
-            } else {
-                return i;
+            }
+
+            if (text.length !== 0) {
+                break;
             }
         }
 
-        return 0;
+        return foundLine;
     }
 
     private shouldMergeImport(document: vscode.TextDocument, relativePath): boolean {
@@ -114,7 +117,9 @@ export class ImportFixer {
     private normaliseRelativePath(importObj, relativePath: string): string {
 
         let removeFileExtenion = (rp) => {
-            if (rp) {
+            if (rp.endsWith('index.js')) {
+                rp = rp.substring(0, rp.lastIndexOf('/'))
+            } else if (rp) {
                 rp = rp.substring(0, rp.lastIndexOf('.'))
             }
             return rp;
